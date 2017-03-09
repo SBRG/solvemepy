@@ -8,7 +8,12 @@ If you use solveME in a scientific publication, please cite:
 
 [Yang, L., Ma, D., Ebrahim, A., Lloyd, C. J., Saunders, M. A., & Palsson, B. O. (2016). solveME: fast and reliable solution of nonlinear ME models. BMC Bioinformatics, 17(1), 391. doi:10.1186/s12859-016-1240-1](http://doi.org/10.1186/s12859-016-1240-1)
 
+and the following for the Quad MINOS solver:
+
+[Ma, D., Yang, L., Fleming, R.M.T., Thiele, I., Palsson, B.O., Saunders, M.A. (2017). Reliable and efficient solution of genome-scale models of Metabolism and macromolecular Expression. Scientific Reports, 7, 40863. doi:10.1038/srep40863](http://doi.org/10.1038/srep40863)
+
 Author: Laurence Yang
+
 Systems Biology Research Group, UCSD
 
 ## Requirements
