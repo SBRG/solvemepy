@@ -53,9 +53,6 @@ subroutine qsolveME(xnd, inform, nb, mu0d, Probname, m, n, ne, nnCon, nnJac, neJ
   ! use qmatrixA,  only: maxnnCon, maxnnJac, maxneJac, haa, kaa, aa
   ! 24 Mar 2016: allocatable haa, kaa, aa
   use qmatrixA,  only: haa, kaa, aa
-  ! all allocatable arrays passed to minoss are stored here 
-  ! use memodel,   only: ha, ka, ad, bld, bud
-  ! use memodel,   only: bld, bud
 
   implicit none
 
