@@ -43,7 +43,7 @@ Systems Biology Research Group, UCSD
 	- python setup.py **config_fc --f90exec=ftn** develop --user
 		- (need to use the **ftn** gfortran Cray wrapper, or else get symbol not found error during import)
 1. ***Troubleshooting common errors***
-	1. ImportError: .../solveME/solveme/qminos/qwarmLP.so: symbol _gfortran_transfer_real128_write, version GFORTRAN_1.4 not defined in file libgfortran.so.3 with link time reference
+	1. ImportError: .../solveME/solvemepy/qminospy/qwarmLP.so: symbol _gfortran_transfer_real128_write, version GFORTRAN_1.4 not defined in file libgfortran.so.3 with link time reference
 		- Problem: setup.py picked up the wrong libgfortran during installation. Typically, if anaconda is installed, an older version is installed, which seems to be used by default.
 		- Solution (workaround): pre-load the desired libgfortran version, bypassing the anaconda one:
 			- `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgfortran.so.3`
@@ -53,9 +53,9 @@ Systems Biology Research Group, UCSD
 
 ### Use qminos to solve ME models in python
 ### For (reduced) ME models prior prototype 44
-1. Import qminos to access the solver methods:
+1. Import qminospy to access the solver methods:
 ~~~~{.python}
-from qminos.me2 import ME_NLP
+from qminospy.me2 import ME_NLP
 me_nlp = ME_NLP(me)
 # Solve directly using LCL (linearly constrained Lagrangian) NLP method
 x,stat,hs = me_nlp.solvenlp()
@@ -66,9 +66,11 @@ sol.x_dict
 ~~~~
 
 ### 24 Feb 2016: for ME models after prototype 44
-1. Import qminos to access the solver methods:
+1. Import 
+
+py to access the solver methods:
 ~~~~{.python}
-from qminos.me1 import ME_NLP1
+from qminospy.me1 import ME_NLP1
 # The object containing solveME methods--composite that uses a ME model object 
 # Provide growth_key = 'mu' for minime models,
 me_nlp = ME_NLP1(me, growth_key='mu')
@@ -83,7 +85,7 @@ sol.x_dict
 ### If your ME model is based on ME 1.0 code (iOL1650, iJL1678):
 1. Same as above but use growth_key='growth_rate_in_per_hour'
 ~~~~{.python}
-from qminos.me1 import ME_NLP1
+from qminospy.me1 import ME_NLP1
 # The object containing solveME methods--composite that uses a ME model object 
 me_nlp = ME_NLP1(me, growth_key='growth_rate_in_per_hour')
 # Bisection
