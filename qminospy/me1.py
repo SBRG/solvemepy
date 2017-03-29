@@ -1,3 +1,4 @@
+from __future__ import print_function, absolute_import
 #============================================================
 # File me1.py
 #
@@ -18,9 +19,9 @@
 # 18 May 2016:  moved make_dilution_fluxes to ME_NLP (ME_NLP1 inherits)
 #============================================================
 
-from me2 import ME_NLP, makeME_LP, makeME_LP_for_NLP, makeME_NLP, makeME_VA
-from me2 import make_nonlin_constraints, make_linear_constraints 
-from qminos import qwarmLP
+from qminospy.me2 import ME_NLP, makeME_LP, makeME_LP_for_NLP, makeME_NLP, makeME_VA
+from qminospy.me2 import make_nonlin_constraints, make_linear_constraints
+from qminospy import qwarmLP
 from cobra.core.Solution import Solution
 from cobra import DictList
 from cobra import Reaction, Metabolite
@@ -28,11 +29,12 @@ from sympy import lambdify, Basic, Symbol
 
 # need this again for me1 backwards compatibility??
 #from cdecimal import Decimal, getcontext
-import me2 as qme
+import qminospy.me2 as qme
 import scipy.sparse as sps
 import numpy as np
 import time
 import warnings
+import six
 import cobrame
 import re
 
@@ -48,18 +50,18 @@ class ME_NLP1(ME_NLP):
         self.substitution_dict = {
 #                            "growth_rate_in_per_hour": 1.0,
                             "mRNA_mean_lifetime_minutes":5.0,
-                            "lol_efficiency_in_per_second":0.9, 
-                            "bam_efficiency_in_per_second":0.0267, 
-                            "tat_translocation_efficiency_per_second":0.0125, 
-                            "secA_translocation_efficiency_aa_per_second":4.0, 
+                            "lol_efficiency_in_per_second":0.9,
+                            "bam_efficiency_in_per_second":0.0267,
+                            "tat_translocation_efficiency_per_second":0.0125,
+                            "secA_translocation_efficiency_aa_per_second":4.0,
                             "proportion_of_rna_that_is_mrna":0.02,
                             "proportion_of_rna_that_is_trna":0.12,
                             "proportion_of_rna_that_is_rrna":0.86,
                             "average_rna_nt_mw":324.,
                             "average_aa_mw":109.,
-                            "mass_rrna_per_ribosome":1700.*1000, 
-                            "average_trna_mw":25000., 
-                            "enzyme_efficiency_scaling": 1.0, 
+                            "mass_rrna_per_ribosome":1700.*1000,
+                            "average_trna_mw":25000.,
+                            "enzyme_efficiency_scaling": 1.0,
                             "percent_nadh_dehydrogenase_that_ndh1": 0.5,
                             "unmodeled_protein_proportion_of_proteome": 0.36,
                             "gam_value" : 34.98,
@@ -95,15 +97,15 @@ class ME_NLP1(ME_NLP):
     def compile_expressions(self, verbosity=0):
         """
         Compile expressions for ME 1.0.
-        Use format consistent with cobrame: 
+        Use format consistent with cobrame:
         (met_index, rxn_index): stoichiometry, (None, rxn_index): (lower_bound, upper_bound)
         (met_index, None): (met_bound, met_constraint_sense)
         """
         tic = time.time()
         expressions = {}
         me = self.me
-        for i,r in enumerate(me.reactions):
-            for met, stoic in r._metabolites.iteritems():
+        for i, r in enumerate(me.reactions):
+            for met, stoic in six.iteritems(r._metabolites):
                 if isinstance(stoic, Basic):
                     expressions[(me.metabolites.index(met), i)] = self.compile_expr(stoic)
             # If lower or upper bound symbolic:
@@ -117,8 +119,8 @@ class ME_NLP1(ME_NLP):
                         metabolite._constraint_sense)
 
         toc = time.time() - tic
-        if verbosity>0:
-            print 'Finished compiling expressions in %f seconds'%toc
+        if verbosity > 0:
+            print('Finished compiling expressions in %f seconds' % toc)
 
         return expressions
 
@@ -145,7 +147,7 @@ class ME_NLP1(ME_NLP):
         else:
             rxns_fva = rxns_fva0
 
-        S,b,xl,xu,csense,c = self.substitute_mu(mu_fixed)
+        S, b, xl, xu, csense, c = self.substitute_mu(mu_fixed)
 
         obj_inds0 = [ me.reactions.index(rxn) for rxn in rxns_fva for j in range(0,2)]
         obj_coeffs = [ci for rxn in rxns_fva for ci in (1.0, -1.0)]
@@ -166,11 +168,11 @@ class ME_NLP1(ME_NLP):
         else:
             warm = True
             if verbosity > 0:
-                print 'Warm-starting first run using basis of length %d'%len(hs)
+                print('Warm-starting first run using basis of length %d'%len(hs))
 
         # Get MINOS options
         if verbosity > 0:
-            print 'Getting MINOS parameters for LP'
+            print('Getting MINOS parameters for LP')
         stropts,intopts,realopts,intvals,realvals,nStrOpts,nIntOpts,nRealOpts =\
             self.get_solver_opts('lp')
 
@@ -191,14 +193,14 @@ class ME_NLP1(ME_NLP):
 
         t_elapsed = time.time()-tic
         if verbosity>0:
-            print 'Finished varyME in %f seconds for %d rxns (%d quadLPs)'%(t_elapsed,
-                    len(rxns_fva), len(obj_inds))
+            print('Finished varyME in %f seconds for %d rxns (%d quadLPs)'%(t_elapsed,
+                    len(rxns_fva), len(obj_inds)))
 
         # Return result consistent with cobrame fva
         fva_result = {
             (self.me.reactions[obj_inds0[2*i]].id):{
-                'maximum':obj_vals[2*i], 
-                'minimum':obj_vals[2*i+1] } for i in xrange(0, nVary/2) }
+                'maximum':obj_vals[2*i],
+                'minimum':obj_vals[2*i+1] } for i in range(0, nVary/2) }
 
         # Save updated basis
         self.hs = hs
@@ -247,7 +249,7 @@ class ME_NLP1(ME_NLP):
             # Fill in stoichiometries: MOSTLY symbolic, or float? Hard to say.
             for rxn in met.reactions:
                 rind = me.reactions.index(rxn)
-                if self.compiled_expressions.has_key((mind,rind)):
+                if (mind, rind) in self.compiled_expressions:
                     expr = self.compiled_expressions[(mind,rind)]
                     s = float(expr(*sub_vals))
                     # Decimal() for backwards compat with ME 1.0
@@ -261,7 +263,7 @@ class ME_NLP1(ME_NLP):
         for rind,rxn in enumerate(me.reactions):
             if hasattr(rxn.lower_bound, 'subs'):
                 # Then, there must be a compiled expression
-                expr = self.compiled_expressions[(None,rind)]
+                expr = self.compiled_expressions[(None, rind)]
                 xl[rind] = float(expr[0](*sub_vals))
                 # Decimal() for backwards compat with ME 1.0
                 #xl[rind] = float(Decimal(expr[0](*sub_vals)).normalize())
@@ -269,7 +271,7 @@ class ME_NLP1(ME_NLP):
             else:
                 xl[rind] = rxn.lower_bound
             if hasattr(rxn.upper_bound, 'subs'):
-                expr = self.compiled_expressions[(None,rind)]
+                expr = self.compiled_expressions[(None, rind)]
                 xu[rind] = float(expr[1](*sub_vals))
                 # Using Decimal for sig_digs, even if slower
                 # Decimal() for backwards compat with ME 1.0
@@ -278,9 +280,9 @@ class ME_NLP1(ME_NLP):
             else:
                 xu[rind] = rxn.upper_bound
         toc = time.time() - tic
-        
+
         if verbosity > 0:
-            print 'Finished substituting S,lb,ub in %f seconds'%toc
+            print('Finished substituting S,lb,ub in %f seconds' % toc)
 
         c = [r.objective_coefficient for r in me.reactions]
         csense = [m._constraint_sense for m in me.metabolites]
@@ -328,7 +330,7 @@ class ME_NLP1(ME_NLP):
             # Fill in stoichiometries: MOSTLY symbolic, or float? Hard to say.
             for rxn in met.reactions:
                 rind = me.reactions.index(rxn)
-                if self.compiled_expressions.has_key((mind,rind)):
+                if (mind, rind) in self.compiled_expressions:
                     expr = self.compiled_expressions[(mind,rind)]
                     #****************************************
                     # DEBUG
@@ -336,12 +338,12 @@ class ME_NLP1(ME_NLP):
                         s = float(expr(*sub_vals))
                     except TypeError as e:
                         # Just indicate which rxn,met,stoich had issues
-                        print repr(e)
-                        print 'rxn=%s \t met=%s'%(rxn.id, met.id)
-                        print 'stoich=',rxn.metabolites[met]
+                        print(repr(e))
+                        print('rxn=%s \t met=%s' % (rxn.id, met.id))
+                        print('stoich=', rxn.metabolites[met])
                         raise Exception('Failed to convert symbolic stoichiometry to float')
 
-                        #print 'Trying float(Decimal())'
+                        #print('Trying float(Decimal())')
                         #s = float(Decimal(expr(*sub_vals)).normalize())
 
                     #****************************************
@@ -373,17 +375,17 @@ class ME_NLP1(ME_NLP):
             else:
                 xu[rind] = rxn.upper_bound
         toc = time.time() - tic
-        
+
         if verbosity > 0:
-            print 'Finished substituting S,lb,ub in %f seconds'%toc
+            print('Finished substituting S,lb,ub in %f seconds' % toc)
 
         c = [r.objective_coefficient for r in me.reactions]
         csense = [m._constraint_sense for m in me.metabolites]
         tic = time.time()
-        J, ne, P, I, V, bl, bu = makeME_LP(S,b,c,xl,xu,csense) 
+        J, ne, P, I, V, bl, bu = makeME_LP(S,b,c,xl,xu,csense)
         toc = time.time()-tic
         if verbosity > 0:
-            print 'Finished makeME_LP in %f seconds'%toc
+            print('Finished makeME_LP in %f seconds' % toc)
 
         # Solve a single LP
         m,n = J.shape
@@ -402,7 +404,7 @@ class ME_NLP1(ME_NLP):
         """
         muopt, hs, xopt, cache = bisectmu(self, precision=1e-3, mumin=0.0, mumax=2.0,
                 maxIter=100, quad=True, basis=None, nlp_compat=False, check_feas0=False,
-                zero_mu=1e-3, verbosity=2) 
+                zero_mu=1e-3, verbosity=2)
 
         Bisection to maximize mu using qMINOS.
         Sequence of feasibility problems.
@@ -425,13 +427,13 @@ class ME_NLP1(ME_NLP):
                     precision=solver_precision, basis=hs)
             if me.solution.status is not 'optimal':
                 warnings.warn('Infeasible at mu=%g. Returning.'%zero_mu)
-                return zero_mu, hs0, x0, cache 
+                return zero_mu, hs0, x0, cache
             else:
                 hs = hs0
 
 
         def checkmu(muf, hs):
-            if not cache.has_key(muf):
+            if muf not in cache:
                 x_new, stat_new, hs_new = self.solvelp(
                     muf, basis=hs, nlp_compat=nlp_compat, verbosity=verbosity,
                     precision=solver_precision)
@@ -455,7 +457,7 @@ class ME_NLP1(ME_NLP):
         tic = time.time()
 
         if verbosity >= 2:
-            print 'iter\tmuopt    \ta     \tb     \tmu1       \tstat1'
+            print('iter\tmuopt    \ta     \tb     \tmu1       \tstat1')
         while iter < maxIter and not converged:
             # Just a sequence of feasibility checks
             mu1 = (a+b)/2.
@@ -474,11 +476,11 @@ class ME_NLP1(ME_NLP):
             iter = iter+1
 
             if verbosity >= 2:
-                print iter, muopt, a, b, mu1, stat1
+                print(iter, muopt, a, b, mu1, stat1)
 
         toc = time.time()-tic
         if verbosity >= 2:
-            print 'Bisection done in %g seconds'%toc
+            print('Bisection done in %g seconds' % toc)
 
         # Save final solution
         me.solution = solution
@@ -488,7 +490,7 @@ class ME_NLP1(ME_NLP):
         return muopt, hs, xopt, cache
 
 
-    def bisectme(self, precision=1e-3, mumin=0.0, mumax=2.0, maxIter=100, quad=True, golden=True, basis=None, nlp_compat=False, check_feas0=False, zero_mu=1e-3, verbosity=0, 
+    def bisectme(self, precision=1e-3, mumin=0.0, mumax=2.0, maxIter=100, quad=True, golden=True, basis=None, nlp_compat=False, check_feas0=False, zero_mu=1e-3, verbosity=0,
             solver_precision='quad'):
         """
         Bisection using qMINOS.
@@ -511,13 +513,12 @@ class ME_NLP1(ME_NLP):
                     precision=solver_precision)
             if me.solution.status is not 'optimal':
                 warnings.warn('Infeasible at mu=%g. Returning.'%zero_mu)
-                return zero_mu, hs0, x0, cache 
+                return zero_mu, hs0, x0, cache
             else:
                 hs = hs0
 
-
         def checkmu(muf, hs):
-            if not cache.has_key(muf):
+            if muf not in cache:
                 x_new, stat_new, hs_new = self.solvelp(
                     muf, basis=hs, nlp_compat=nlp_compat, verbosity=verbosity,
                     precision=solver_precision)
@@ -544,7 +545,7 @@ class ME_NLP1(ME_NLP):
         tic = time.time()
 
         if verbosity > 1:
-            print 'iter\tmuopt    \ta     \tb     \tmu1       \tmu2       \tstat1  \tstat2'
+            print('iter\tmuopt    \ta     \tb     \tmu1       \tmu2       \tstat1  \tstat2')
         while iter < maxIter and not converged:
             mu1 = b - (b - a) * phi
             mu2 = a + (b - a) * phi
@@ -564,7 +565,7 @@ class ME_NLP1(ME_NLP):
                     solution = sol1
                     xopt = x1
                 else:        # both feasible
-                    a = mu2 
+                    a = mu2
                     muopt = mu2
                     solution = sol2
                     xopt = x2
@@ -574,16 +575,16 @@ class ME_NLP1(ME_NLP):
             iter = iter+1
 
             if verbosity > 1:
-                print iter, muopt, a, b, mu1, mu2, stat1, stat2
+                print(iter, muopt, a, b, mu1, mu2, stat1, stat2)
 
         toc = time.time() - tic
         if verbosity > 0:
-            print 'Bisection done in %g seconds'%toc
+            print('Bisection done in %g seconds' % toc)
 
         # Save final solution
         me.solution = solution
 
-        return muopt, hs, xopt, cache 
+        return muopt, hs, xopt, cache
 
     def make_nlp(self, growth_rxn='biomass_dilution', growth_symbol='mu'):
         """
@@ -616,7 +617,7 @@ class ME_NLP1(ME_NLP):
 
 
         #----------------------------------------------------
-        J,nnCon,nnJac,neJac,ne,P,I,V,bl,bu = makeME_NLP(self.A, self.B, 
+        J,nnCon,nnJac,neJac,ne,P,I,V,bl,bu = makeME_NLP(self.A, self.B,
                 self.S, self.b, self.c, self.xl, self.xu)
 
         M,N = J.shape
@@ -645,7 +646,7 @@ class ME_NLP1(ME_NLP):
         precision: precision of the bisectme phase (i.e., epsilon for |b-a|<=epsilon to converge)
         max_iter
         check_feas0: check feasibility at mu = 0?
-        zero_mu: terminate if mu is infeasible for mu <= zero_mu, 
+        zero_mu: terminate if mu is infeasible for mu <= zero_mu,
         """
         if self.nb is None:
             # Must allow formulation more general than mu*A*v + B*v = 0
@@ -683,7 +684,8 @@ class ME_NLP1(ME_NLP):
             t_elapsed = time.time()-tic1
 
             if verbosity > 0:
-                print 'Finished in %f seconds (%f bisectME, %f ME-NLP)'%(t_elapsed, time_bs, time_nlp)
+                print('Finished in %f seconds (%f bisectME, %f ME-NLP)' %
+                      (t_elapsed, time_bs, time_nlp))
 
             return x, stat, hs
 
@@ -755,15 +757,15 @@ def me1nlp(me, growth_symbol='growth_rate_in_per_hour', scaleUnits=False, LB=0.0
     xl = np.matrix([r.lower_bound for r in me.reactions]).transpose()
     xu = np.matrix([r.upper_bound for r in me.reactions]).transpose()
 
-#   Sept 04, 2015: skip because comparing mu in numpy arrays seems to 
+#   Sept 04, 2015: skip because comparing mu in numpy arrays seems to
 #   cause "cannot compare the truth value of ..." error in some installations
-#     print 'xl: ', xl.min(), xl.max()
-#     print 'xu: ', xu.min(), xu.max()
+#     print('xl: ', xl.min(), xl.max())
+#     print('xu: ', xu.min(), xu.max())
 
     # Replace mu with default bounds
     from sympy.core.symbol import Symbol
 
-    for i in xrange(0,len(xl)):
+    for i in range(0, len(xl)):
         if isinstance(xl.item(i), Symbol):
             xl[i] = LB
         if isinstance(xu.item(i), Symbol):

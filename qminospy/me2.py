@@ -1,3 +1,4 @@
+from __future__ import print_function, absolute_import
 #============================================================
 # File me2.py
 #
@@ -28,8 +29,8 @@ from sympy import Basic
 import time
 import warnings
 import cobrame
-import qwarmLP
-import warmLP
+from qminospy import qwarmLP
+from qminospy import warmLP
 import re
 import six
 
@@ -97,8 +98,8 @@ class ME_NLP:
                     param:  name of param value
                     val:    real-valued value
         """
-        for param,val in param_dict.iteritems():
-            if self.opt_realdict[model].has_key(param):
+        for param, val in six.iteritems(param_dict):
+            if param in self.opt_realdict[model]:
                 if isinstance(val, float):
                     self.opt_realdict[model][param]=val
                 else:
@@ -114,10 +115,10 @@ class ME_NLP:
                     param:  name of param value
                     val:    int-valued value
         """
-        for param,val in param_dict.iteritems():
-            if self.opt_intdict[model].has_key(param):
+        for param, val in six.iteritems(param_dict):
+            if param in self.opt_intdict[model]:
                 if isinstance(val, int):
-                    self.opt_intdict[model][param]=val
+                    self.opt_intdict[model][param] = val
                 else:
                     warnings.warn('val must be int')
             else:
@@ -373,7 +374,7 @@ class ME_NLP:
         else:
             warm = True
             if verbose:
-                print 'Using provided basis of length %d'%len(hs)
+                print('Using provided basis of length %d' % len(hs))
 
         import os.path
 
@@ -381,7 +382,7 @@ class ME_NLP:
         probname = 'me_lp'
 
         if verbosity > 0:
-            print 'Getting MINOS parameters from ME_NLP...'
+            print('Getting MINOS parameters from ME_NLP...')
 
         precision = precision.lower()
 
@@ -504,7 +505,7 @@ class ME_NLP:
                 hs = hs0
 
         def checkmu(muf, hs):
-            if not cache.has_key(muf):
+            if muf not in cache:
                 x_new, stat_new, hs_new = self.solvelp(
                     muf, basis=hs, nlp_compat=nlp_compat, verbosity=verbosity)
                 if me.solution.status is 'optimal':
@@ -524,7 +525,7 @@ class ME_NLP:
         iter = 0
 
         if verbosity >= 2:
-            print 'iter\tmuopt    \ta     \tb     \tmu1       \tstat'
+            print('iter\tmuopt    \ta     \tb     \tmu1       \tstat')
         while iter < maxIter and not converged:
             # Just a sequence of feasibility checks
             mu1 = (a+b)/2.
@@ -543,7 +544,7 @@ class ME_NLP:
             iter = iter+1
 
             if verbosity >= 2:
-                print iter, muopt, a, b, mu1, stat1
+                print(iter, muopt, a, b, mu1, stat1)
 
         # Save final solution
         me.solution = solution
@@ -579,9 +580,8 @@ class ME_NLP:
             else:
                 hs = hs0
 
-
         def checkmu(muf, hs):
-            if not cache.has_key(muf):
+            if muf not in cache:
                 x_new, stat_new, hs_new = self.solvelp(
                     muf, basis=hs, nlp_compat=nlp_compat, verbosity=verbosity)
                 if me.solution.status is 'optimal':
@@ -605,7 +605,7 @@ class ME_NLP:
         iter = 0
 
         if verbosity > 1:
-            print 'iter\tmuopt    \ta     \tb     \tmu1       \tmu2       \tstat1  \tstat2'
+            print('iter\tmuopt    \ta     \tb     \tmu1       \tmu2       \tstat1  \tstat2')
         while iter < maxIter and not converged:
             mu1 = b - (b - a) * phi
             mu2 = a + (b - a) * phi
@@ -635,7 +635,7 @@ class ME_NLP:
             iter = iter+1
 
             if verbosity>1:
-                print iter, muopt, a, b, mu1, mu2, stat1, stat2
+                print(iter, muopt, a, b, mu1, mu2, stat1, stat2)
 
         # Save final solution
         me.solution = solution
@@ -681,7 +681,7 @@ class ME_NLP:
         S = sps.dok_matrix((len(me.metabolites), len(me.reactions)))
         # populate with stoichiometry
         for i, r in enumerate(me.reactions):
-            for met, value in r._metabolites.iteritems():
+            for met, value in six.iteritems(r._metabolites):
                 met_index = me.metabolites.index(met)
                 if hasattr(value, "subs"):
                     S[met_index, i] = float(value.subs(growth_key, growth_rate))
@@ -730,7 +730,7 @@ class ME_NLP:
         b = [m._bound for m in me.metabolites]
         c = [r.objective_coefficient for r in me.reactions]
 
-        obj_inds0 = [ me.reactions.index(rxn) for rxn in rxns_fva for j in range(0,2)]
+        obj_inds0 = [me.reactions.index(rxn) for rxn in rxns_fva for j in range(0, 2)]
         obj_coeffs = [ci for rxn in rxns_fva for ci in (1.0, -1.0)]
         # csense = ['E' for m in me.metabolites]
         csense = [m._constraint_sense for m in me.metabolites]
@@ -750,11 +750,11 @@ class ME_NLP:
         else:
             warm = True
             if verbosity > 0:
-                print 'Warm-starting first run using basis of length %d'%len(hs)
+                ('Warm-starting first run using basis of length %d' % len(hs))
 
         # Get MINOS options
         if verbosity > 0:
-            print 'Getting MINOS parameters for LP'
+            print('Getting MINOS parameters for LP')
         stropts,intopts,realopts,intvals,realvals,nStrOpts,nIntOpts,nRealOpts =\
             self.get_solver_opts('lp')
 
@@ -775,14 +775,14 @@ class ME_NLP:
 
         t_elapsed = time.time()-tic
         if verbosity>0:
-            print 'Finished varyME in %f seconds for %d rxns (%d quadLPs)'%(t_elapsed,
-                    len(rxns_fva), len(obj_inds))
+            print('Finished varyME in %f seconds for %d rxns (%d quadLPs)' %
+                  (t_elapsed, len(rxns_fva), len(obj_inds)))
 
         # Return result consistent with cobrame fva
         fva_result = {
             (self.me.reactions[obj_inds0[2*i]].id):{
                 'maximum':obj_vals[2*i], 
-                'minimum':obj_vals[2*i+1] } for i in xrange(0, nVary/2) }
+                'minimum':obj_vals[2*i+1] } for i in range(0, nVary/2) }
 
         # Save updated basis
         self.hs = hs
@@ -859,7 +859,7 @@ class ME_NLP:
                 hs = np.zeros(nb, np.dtype('i4'))
             else:
                 warm = True
-                print 'Using provided basis of length %d'%len(hs)
+                print('Using provided basis of length %d' % len(hs))
             if x0 is None:
                 x0 = np.zeros(nb)
                 x0[0] = self.mu0
@@ -868,10 +868,10 @@ class ME_NLP:
             ### Set solver params
             import os.path
             # if param_file is not None and os.path.isfile(param_file):
-            #     print 'Getting MINOS parameters from specs file:', param_file
+            #     print('Getting MINOS parameters from specs file:', param_file)
             # else:
 
-            print 'Getting MINOS parameters from ME_NLP...'
+            print('Getting MINOS parameters from ME_NLP...')
             stropts,intopts,realopts,intvals,realvals,nStrOpts,nIntOpts,nRealOpts =\
                 self.get_solver_opts('nlp')
 
@@ -892,8 +892,8 @@ class ME_NLP:
             time_elapsed = clock.time() - tic
             # Update solution in self
             self.x = x
-            print "Time elapsed: ", time_elapsed, "seconds"
-            print "Status: ", self.inform
+            print("Time elapsed: ", time_elapsed, "seconds")
+            print("Status: ", self.inform)
 
         # Write the solution to the ME model's solution for a consistent solve interface
         f = x[0]
@@ -980,11 +980,11 @@ class ME_NLP:
         else:
             if auto_update_bounds:
                 if verbosity>1:
-                    print 'Updating bounds to me'
+                    print('Updating bounds to me')
                 self.update_bounds()
             if auto_update_obj:
                 if verbosity>1:
-                    print 'Updating objective to me'
+                    print('Updating objective to me')
                 self.update_obj()
 
             tic2 = time.time()
@@ -995,7 +995,8 @@ class ME_NLP:
             t_elapsed = time.time()-tic1
 
             if verbosity>0:
-                print 'Finished in %f seconds (%f bisectME, %f ME-NLP)'%(t_elapsed, time_bs, time_nlp)
+                print('Finished in %f seconds (%f bisectME, %f ME-NLP)' %
+                      (t_elapsed, time_bs, time_nlp))
             # Return the basis from the LP, since that is what will be used to
             # warm-start solvenlp. We could return the NLP basis, too.
 
@@ -1136,14 +1137,12 @@ class ME_NLP:
             warnings.warn('Dilution fluxes should already be inequalities for ME 1.0 model. Quitting.')
 
         if verbosity > 0:
-            print 'Done adding dilution fluxes.'
+            print('Done adding dilution fluxes.')
             if len(macromol_error)>0:
-                print 'Failed to retrieve %d macromolecules from model'%len(macromol_error)
+                print('Failed to retrieve %d macromolecules from model' %
+                      len(macromol_error))
 
         return rxns_dil, constraints_dil, macromol_error
-
-
-
 
 ## End of ME_NLP
 ##//============================================================
@@ -1158,18 +1157,18 @@ def writeME_NLP(me, outname=None):
     A,B,d,S,b,c,xl,xu,csense,csense_nonlin = me2nlp(me)
     J, nnCon, nnJac, neJac, nzS, P, I, V, bl, bu  = makeME_NLP(A,B,S,b,c,xl,xu)
     if outname is not None:
-        print 'Writing to file: ', outname
+        print('Writing to file: ', outname)
         dumpMat(J, outname, nnCon, nnJac, neJac, nzS, P, I, V, bl, bu)
-        print 'Done!'
+        print('Done!')
 
     return J, nnCon, nnJac, neJac, bl, bu
 
 
-
-def me2nlp(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0, growth_rxn='biomass_dilution', unitDict={'e_mult': 1e-6,
-              'typeE': [cobrame.TranscriptionReaction, cobrame.TranslationReaction]},
-              max_mu = True
-    ):
+def me2nlp(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0,
+           growth_rxn='biomass_dilution', unitDict={'e_mult': 1e-6,
+              'typeE': [cobrame.TranscriptionReaction,
+                        cobrame.TranslationReaction]},
+              max_mu=True):
     """
     From ME model object, create NLP data matrices of the form:
     max mu = c'*x
@@ -1187,10 +1186,10 @@ def me2nlp(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0, growth_r
     nRxn = len(me.reactions)
     rxn_mu = me.reactions.get_by_id(growth_rxn)
     ind_mu = me.reactions.index(rxn_mu)
-    order_new = range(0,nRxn)
+    order_new = list(range(0, nRxn))
     order_new[ind_mu] = 0
     order_new[0] = ind_mu
-    me.reactions = DictList( [ me.reactions[i] for i in order_new] )
+    me.reactions = DictList([me.reactions[i] for i in order_new])
 
     # Identify mets in nonlinear vs. linear constraints
 #     mets_nonlin = [met for met in me.metabolites if sum(
@@ -1222,19 +1221,19 @@ def me2nlp(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0, growth_r
 
 #   Sept 04, 2015: skip because comparing mu in numpy arrays seems to 
 #   cause "cannot compare the truth value of ..." error in some installations
-#     print 'xl: ', xl.min(), xl.max()
-#     print 'xu: ', xu.min(), xu.max()
+#     print('xl: ', xl.min(), xl.max())
+#     print('xu: ', xu.min(), xu.max())
 
     # Replace mu with default bounds
     from sympy.core.symbol import Symbol
 
-    for i in xrange(0,len(xl)):
+    for i in range(0, len(xl)):
         if isinstance(xl.item(i), Symbol):
             xl[i] = LB
         if isinstance(xu.item(i), Symbol):
             xu[i] = UB
 
-    return A,B,d,S,b,c,xl,xu,csense,csense_nonlin
+    return A, B, d, S, b, c, xl, xu, csense, csense_nonlin
 
 
 def me2nlp_general(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0,
@@ -1243,7 +1242,7 @@ def me2nlp_general(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0,
                              'typeE': [
                                  cobrame.TranscriptionReaction,
                                  cobrame.TranslationReaction]},
-                   max_mu = True):
+                   max_mu=True):
     """
     From ME model object, create NLP data matrices of the form:
     max mu = c'*x
@@ -1261,10 +1260,10 @@ def me2nlp_general(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0,
     nRxn = len(me.reactions)
     rxn_mu = me.reactions.get_by_id(growth_rxn)
     ind_mu = me.reactions.index(rxn_mu)
-    order_new = range(0,nRxn)
+    order_new = list(range(0, nRxn))
     order_new[ind_mu] = 0
     order_new[0] = ind_mu
-    me.reactions = DictList( [ me.reactions[i] for i in order_new] )
+    me.reactions = DictList([me.reactions[i] for i in order_new])
 
     mets_linear, mets_nonlin = get_lin_nonlin_mets(me, growth_symbol)
 
@@ -1288,7 +1287,7 @@ def me2nlp_general(me, growth_symbol='mu', scaleUnits=False, LB=0.0, UB=1000.0,
     # Replace mu with default bounds
     from sympy.core.symbol import Symbol
 
-    for i in xrange(0,len(xl)):
+    for i in range(0,len(xl)):
         if isinstance(xl.item(i), Symbol):
             xl[i] = LB
         if isinstance(xu.item(i), Symbol):
@@ -1321,8 +1320,8 @@ def make_nonlin_constraints(me, mets_nonlin, growth_symbol='mu', scaleUnits=Fals
     # Re-order rxns so that nonlin variables appear first (vars in A)
     rxnsnl = list(set([r for m,r,a,b in cons_nl if a != 0]))
     if verbose:
-        print len(rxnsnl), 'variables in nonlinear constraints'
-    #print 'Reordering rxns so nonlinear variables come first'
+        print(len(rxnsnl), 'variables in nonlinear constraints')
+    #print('Reordering rxns so nonlinear variables come first')
     #me.reactions = DictList( rxnsnl + [r for r in me.reactions if r not in rxnsnl] )
 
     row_indA = [mets_nonlin.index(m) for m,r,a,b in cons_nl if a != 0]
@@ -1356,7 +1355,7 @@ def make_nonlin_constraints_general(me, mets_nonlin, growth_symbol='mu', scaleUn
     dataB = [b for m,r,a,b in cons_nl if b != 0]
     # Re-order rxns so that nonlin variables appear first (vars in A)
     rxnsnl = list(set([r for m,r,a,b in cons_nl if a != 0]))
-    print len(rxnsnl), 'variables in nonlinear constraints'
+    print(len(rxnsnl), 'variables in nonlinear constraints')
 
     row_indA = [mets_nonlin.index(m) for m,r,a,b in cons_nl if a != 0]
     col_indA = [me.reactions.index(r) for m,r,a,b in cons_nl if a != 0]
@@ -1455,8 +1454,8 @@ def get_nonlin_triplets_general(model, mets_nonlin, growth_symbol='mu',
                     #cons_nl.append([met, rxn] + [float(c) for c in coeffs])
                     cons_nl[(met,rxn)] = [float(c) for c in coeffs]
                 except:
-                    print 'Not expressable as Poly:'
-                    print expr
+                    print('Not expressable as Poly:')
+                    print(expr)
 
     return cons_nl
 
@@ -1512,15 +1511,15 @@ def writeME_NLP_from_file(infile = 'scaledME_NLP.mat', outname=None):
     xu = model['ub'][0][0]   # 1755 vector
     J, nnCon, nnJac, neJac, nzS, P, I, V, bl, bu  = makeME_NLP(A,B,S,b,c,xl,xu)
     if outname is not None:
-        print 'Writing to file: ', outname
+        print('Writing to file: ', outname)
         dumpMat(J, outname, nnCon, nnJac, neJac, nzS, P, I, V, bl, bu)
-        print 'Done!'
+        print('Done!')
 
     return J, nnCon, nnJac, neJac, bl, bu
 
 
 
-def makeME_LP(S,b,c,xl,xu,csense):
+def makeME_LP(S, b, c, xl, xu, csense):
     """
     Create simple LP for qMINOS and MINOS
     Inputs:
@@ -1681,7 +1680,7 @@ def makeME_VA(S,b,xl,xu,csense,obj_inds,obj_coeffs):
         c)
         ).tocsc()
     toc = time.time() - tic
-    print 'Stacking J took %f seconds'%toc
+    print('Stacking J took %f seconds' % toc)
 
     # Sort indices
     J.sort_indices()
@@ -1695,14 +1694,14 @@ def makeME_VA(S,b,xl,xu,csense,obj_inds,obj_coeffs):
     I = [i+1 for i in J.indices]
     V = J.data
     toc = time.time()-tic
-    print 'Making I & V took %f seconds'%toc
+    print('Making I & V took %f seconds' % toc)
 
     # Pointers to start of each column
     tic = time.time()
     # Just change to 1-based indexing for Fortran
     P = [pi+1 for pi in J.indptr]
     toc = time.time() - tic
-    print 'Making P took %f seconds'%toc
+    print('Making P took %f seconds' % toc)
 
     # Make primal and slack bounds
     bigbnd =   1e+40
@@ -1722,14 +1721,14 @@ def makeME_VA(S,b,xl,xu,csense,obj_inds,obj_coeffs):
     bl = sp.vstack([xl, sl])
     bu = sp.vstack([xu, su])
     toc = time.time()-tic
-    print 'Stacking bl & bu took %f seconds'%toc
+    print('Stacking bl & bu took %f seconds' % toc)
 
     obj_indsf = [i+1 for i in obj_inds]
 
     return J, ne, P, I, V, bl, bu, obj_indsf
 
 
-def makeME_NLP(A,B,S,b,c,xl,xu):
+def makeME_NLP(A, B, S, b, c, xl, xu):
     """
     Creates ME NLP data matrix to be passed to qsolveME
     Basically the same matrix as dumpMat, but returns object 
@@ -1834,10 +1833,10 @@ def dumpMat(S, name, nnCon, nnJac, neJac, nzS, P, I, V, bl=None, bu=None):
     import scipy as sp
     import scipy.sparse as sps
 
-    # print 'Testing: you made it to dumpMat call'
+    # print('Testing: you made it to dumpMat call')
     fname = name + '.txt'
 
-    m,n = S.shape
+    m, n = S.shape
 #     nzS = S.nnz
 #     #I,J = S.nonzero()
 #     # Need column-wise elements but nonzero returns row-wise
@@ -1859,13 +1858,13 @@ def dumpMat(S, name, nnCon, nnJac, neJac, nzS, P, I, V, bl=None, bu=None):
     #************************************************************
     # Write to file
     with open(fname, 'w') as f:
-        f.write('%.8s\n'%name)      # First line, up to 8 chars 
-        f.write('%8i\n'%nnCon)      # Num of rows in Jacobian 
-        f.write('%8i\n'%nnJac)      # Num of cols in Jacobian 
-        f.write('%8i\n'%neJac)      # Num of nonzeros in Jacobian 
-        f.write('%8i\n'%m)          # Num of rows in S (including obj row) 
-        f.write('%8i\n'%n)          # Num of cols in S 
-        f.write('%8i\n'%nzS)        # Num of nonzeros in S 
+        f.write('%.8s\n' % name)      # First line, up to 8 chars
+        f.write('%8i\n' % nnCon)      # Num of rows in Jacobian
+        f.write('%8i\n' % nnJac)      # Num of cols in Jacobian
+        f.write('%8i\n' % neJac)      # Num of nonzeros in Jacobian
+        f.write('%8i\n' % m)          # Num of rows in S (including obj row)
+        f.write('%8i\n' % n)          # Num of cols in S
+        f.write('%8i\n' % nzS)        # Num of nonzeros in S
         # Write as 1-based indexing
         for Pi in P:
             f.write('%8i\n'%Pi)     # Pointers      n+1 
@@ -1880,8 +1879,8 @@ def dumpMat(S, name, nnCon, nnJac, neJac, nzS, P, I, V, bl=None, bu=None):
             for bui in bu:
                 f.write('%19.12e\n'%bui)
 
-    print 'Created file: %s'%fname
-    print 'File successfully closed? ', f.closed
+    print('Created file: %s'%fname)
+    print('File successfully closed? ', f.closed)
 
 
 
