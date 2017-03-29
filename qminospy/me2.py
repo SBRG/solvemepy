@@ -698,7 +698,7 @@ class ME_NLP:
         High-level interface for qvaryME (quad-prec FVA)
         12 Aug 2015: first version. Must fix bugs.
         """
-        import qvaryME
+        from qminospy import qvaryME
         from cobrame import mu
         import time as time
         import six
@@ -841,7 +841,7 @@ class ME_NLP:
         30 Jul 2015: first version
         14 Aug 2015: can warm-start by providing basis (hs)
         """
-        import qsolveME as qminos
+        from qminospy import qsolveME as qminos
         import time as clock
         import os.path
 

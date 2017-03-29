@@ -134,7 +134,7 @@ class ME_NLP1(ME_NLP):
         12 Aug 2015: first version. Must fix bugs.
         04 Aug 2016: ME 1.0 version
         """
-        import qvaryME
+        from qminospy import qvaryME
         from cobrame import mu
         import time as time
         import six
@@ -600,7 +600,7 @@ class ME_NLP1(ME_NLP):
 
         where gk(mu) are known families of functions of mu.
         """
-        import qminos.me2 as qme
+        import qminospy.me2 as qme
 
         if self.A is None:
             self.make_matrices()
