@@ -22,7 +22,11 @@ from __future__ import print_function, absolute_import
 
 import numpy as np
 import scipy.sparse as sps
-from cobra.core.Solution import Solution
+import cobra
+if cobra.__version__ < '0.6.0':
+    from cobra.core.Solution import Solution
+else:
+    from cobra.core.solution import LegacySolution as Solution
 from cobra import DictList
 from cobra import Reaction, Metabolite
 from sympy import Basic
@@ -1051,7 +1055,6 @@ class ME_NLP:
         setting a reaction.keff to a new value.
         """
         return self.make_dilution_fluxes(csense)
-
 
     def make_dilution_fluxes(self, csense='G', macromolecules=['complex'], verbosity=1,
             LB_DIL=0.0, UB_DIL=1e6, mols_exclude=[]):
