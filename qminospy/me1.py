@@ -1,4 +1,4 @@
-from __future__ import print_function, absolute_import
+from __future__ import print_function, absolute_import, division
 #============================================================
 # File me1.py
 #
@@ -200,7 +200,7 @@ class ME_NLP1(ME_NLP):
         fva_result = {
             (self.me.reactions[obj_inds0[2*i]].id):{
                 'maximum':obj_vals[2*i],
-                'minimum':obj_vals[2*i+1] } for i in range(0, nVary/2) }
+                'minimum':obj_vals[2*i+1] } for i in range(0, nVary//2) }
 
         # Save updated basis
         self.hs = hs
