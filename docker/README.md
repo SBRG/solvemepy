@@ -7,7 +7,6 @@ Docker Image providing solveme, cobrame, ecolime
 docker run --rm -i -v $(pwd):/workdir -t sbrg/solveme:3.6 bash
 ```
 From here you can run python and follow the instructions for importing and running solveme, on
-https://github.com/SBRG/solveme or
 https://github.com/SBRG/solvemepy
 
 
