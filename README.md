@@ -18,7 +18,7 @@ Systems Biology Research Group, UCSD
 
 ## Requirements
 1. Python
-	- tested on Python 2.7
+	- tested on Python 2.7 and 3.6
 1. cobrapy
 	- tested on 0.5.11
 	- not yet fully compatible with cobrapy 0.6 release
