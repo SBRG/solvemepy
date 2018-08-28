@@ -1,0 +1,126 @@
+# Makefile.defs
+# Main aim: Select a compiler from one of the USE... choices below.
+#
+# 19 Jul 2015: added -fPIC for compatibility with f2py
+# 28 Apr 2014: Borrowed Makefile.defs from minos56.
+
+  OS        = $(shell uname -s)
+  ARCH      = $(OS)-$(shell uname -m)
+  MAKE      = make
+
+# Set exactly one of these to yes
+
+  USEabsoft = no
+  USEg77    = no
+  USEg95    = no
+  USEgfortran = yes
+  USEifc    = no
+  USElf95   = no
+  USEsgi    = no
+  USEsunos  = no
+  USEn95    = no
+  USEgeneric= no
+
+ifeq ($(USEabsoft),yes)    # LINUX with Absoft compiler
+  FC        = f95 -fPIC
+  FFLAGSdbg = -g
+  FFLAGSopt = -O
+  SHARED    = -X-shared
+  LIBDIR    =
+  LIBS      = -L$(ABSOFT) -lU77
+endif
+
+ifeq ($(USEg77),yes)       # LINUX with g77
+  FC        = g77 -fPIC
+  FFLAGSdbg = -g
+  FFLAGSopt = -O
+  SHARED    = -shared
+  LIBDIR    =
+  LIBS      = 
+endif
+
+ifeq ($(USEgfortran),yes)  # LINUX with gfortran
+  FC        = gfortran -fPIC
+  FFLAGSdbg = -g
+  FFLAGSopt = -O
+  SHARED    = -shared
+  LIBDIR    =
+  LIBS      = 
+endif
+
+ifeq ($(USEg95),yes)       # LINUX with g95
+  FC        = g95 -fPIC
+  FFLAGSdbg = -fsloppy-char -g
+  FFLAGSopt = -fsloppy-char -O
+  SHARED    = -shared
+  LIBDIR    =
+  LIBS      = 
+endif
+
+ifeq ($(USEifc),yes)       # LINUX with Intel Fortran Compiler
+  FC        = ifc -fPIC
+  SHARED    = --shared
+  MFLAGS    = -v -f $(HOME)/matlab/mexopts90.sh
+  FFLAGSdbg = -g
+  FFLAGSopt = -O
+# LIBDIR    = -L/usr/local/lib -lblas
+  LIBS      = 
+endif
+
+ifeq ($(USElf95),yes)      # LINUX with Lahey compiler
+# Lahey F95.
+# For MINOS, have to use --nchk even with debug mode
+# to accommodate passing real*8 z(lhs) as integer hs(nb), etc.
+  FC        = lf95 -fPIC
+  SHARED    = --shared
+  MFLAGS    = -v -f $(HOME)/matlab/mexopts90.sh
+# FFLAGSdbg = -g  --ap  --chk  --pca --nsav --tpp --trace --f95 --info
+  FFLAGSdbg = -g  --ap --nchk  --pca --nsav --tpp --trace
+  FFLAGSopt = -O --nap --nchk --npca --nsav --tpp --trace
+  LIBDIR    = -L/usr/local/lib -lblas
+  LIBS      = 
+endif
+
+ifeq ($(USEsgi),yes)       # SGI IRIX64
+  FC77      = f77 -fPIC
+  FC90      = f90
+  FC        = f90
+  MFLAGS    = -fortran -v
+  FFLAGSdbg = -g -64
+  FFLAGSopt = -O -64
+  MFCFLA    = '-64 -freeform'
+  FIXED     = -fixedform
+  SHARED    = -shared      # <-- guessing!!
+  LIBDIR    =
+  LIBS      = 
+endif
+
+ifeq ($(USEsunos),yes)     # SunOS
+  FC        = g77 -fPIC
+  FFLAGSdbg = -g
+  FFLAGSopt = -O
+  SHARED    = -shared
+  LIBDIR    =
+  LIBS      = 
+endif
+
+ifeq ($(USEn95),yes)       # NAG's f95.
+# NAG F95
+  FC        = f95 -fPIC
+  FFLAGSdbg = -g -colour -gline -w=obs -w=unused -fixed -hollerith_io
+  FFLAGSopt = -O -colour -fixed -w=obs -w=unused -hollerith_io
+  SHARED    = -dynamic
+  LIBS      = -L/sw/lib -lg2c
+endif
+
+ifeq ($(USEgeneric),yes)   # Generic Linux or Unix Fortran
+  FC        = f90 -fPIC
+  CC        = cc
+  CFLAGS    = -O2
+  MEX       = mex
+  FFLAGSdbg = -g
+  FFLAGSopt = -O
+  SHARED    = -shared
+  LIBDIR    =
+  LIBS      = 
+endif
