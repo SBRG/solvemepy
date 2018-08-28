@@ -31,5 +31,6 @@ ext_modules = [
 setup(
     name="qminospy",
     ext_modules=ext_modules,
-    cmdclass={"develop": develop}
+    cmdclass={"develop": develop},
+    install_requires=['cobrame<=0.0.7'],
     )

@@ -22,7 +22,8 @@ Systems Biology Research Group, UCSD
 1. cobrapy
 	- tested on 0.5.11
 	- not yet fully compatible with cobrapy 0.6 release
-1. cobrame: follow Installation instructions here: https://github.com/SBRG/cobrame
+1. cobrame (0.0.7): follow Installation instructions here: https://github.com/SBRG/cobrame
+	- git clone --branch v0.0.7 https://github.com/SBRG/cobrame.git
 1. gfortran (>=4.6)
 	- (Ubuntu) sudo apt-get install gfortran
 	- (Arch) sudo pacman -S gcc-fortran
