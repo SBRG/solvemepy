@@ -31,7 +31,7 @@ Systems Biology Research Group, UCSD
 
 ## Installation
 1. Compile quadMINOS
-	- copy Makefile.defs into qminos_root/minos/ and qminos_root/qminos/
+	- copy Makefile.defs into quadLP_root/minos56/ and quadLP_root/qminos56/
 		- this step ensures the compiler flags needed to interface with Python are set
 	- cd qminos_root
 	- cd minos56; make clean; make
