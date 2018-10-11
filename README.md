@@ -103,3 +103,6 @@ sol = me.solution
 sol.f
 sol.x_dict
 ~~~~
+
+### Use qminos to solve LP problems in quad-precision:
+See the notebook: examples/test_quadLP.ipynb
