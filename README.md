@@ -57,6 +57,14 @@ Systems Biology Research Group, UCSD
 			- `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgfortran.so.3`
 			- (then, proceed with setup) python setup.py develop --user
 		- [Link to original solution](https://github.com/ContinuumIO/anaconda-issues/issues/686)
+	1. NaN produced by the solver.
+		- Problem: certain computing environments (e.g., compute clusters) may have compiled Numpy with GCC versions that don't match that used to compile Quad MINOS, and/or the Fortran 90 code in solvemepy. This may lead to unexpected behavior on just that compute environment (like NaN values).
+		- Solution: re-compile Numpy with GCC version matching that used to compile Quad MINOS.
+			1. load your virtual environment
+			1. pip install git+https://github.com/numpy/numpy@v1.16.0
+				- here, we use numpy 1.16.0 as an example
+			1. perform the Installation steps 1-3 (compile quad minos, copy shared libraries, python setup.py develop)		
+		- Credit: thank you to Hui Zhong Lu at Calcul Quebéc for this solution!
             
 
 ### Use qminos to solve ME models in python
