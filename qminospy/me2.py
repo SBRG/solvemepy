@@ -31,6 +31,7 @@ import warnings
 import cobrame
 from qminospy import qwarmLP
 from qminospy import warmLP
+from cobrame import MEModel
 import re
 import six
 
@@ -1083,7 +1084,7 @@ class ME_NLP:
         constraints_dil = []    # return dilution coupling constraints
         macromol_error = []     # report macromolecules where failed to add dilution
 
-        if isinstance(me, cobrame.core.MEModel.MEmodel):
+        if isinstance(me, MEmodel):
             """
             For now, should only support this function for cobrame models
             since ME 1.0 models already have separate dilution fluxes
