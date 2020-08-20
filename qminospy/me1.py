@@ -22,7 +22,11 @@ from __future__ import print_function, absolute_import, division
 from qminospy.me2 import ME_NLP, makeME_LP, makeME_LP_for_NLP, makeME_NLP, makeME_VA
 from qminospy.me2 import make_nonlin_constraints, make_linear_constraints
 from qminospy import qwarmLP
-from cobra.core.Solution import Solution
+import cobra
+if cobra.__version__ < '0.6.0':
+    from cobra.core.Solution import Solution
+else:
+    from cobra.core.solution import LegacySolution as Solution
 from cobra import DictList
 from cobra import Reaction, Metabolite
 from sympy import lambdify, Basic, Symbol
