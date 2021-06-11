@@ -1084,7 +1084,7 @@ class ME_NLP:
         constraints_dil = []    # return dilution coupling constraints
         macromol_error = []     # report macromolecules where failed to add dilution
 
-        if isinstance(me, MEmodel):
+        if isinstance(me, MEModel):
             """
             For now, should only support this function for cobrame models
             since ME 1.0 models already have separate dilution fluxes
